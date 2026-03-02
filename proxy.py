@@ -22,7 +22,7 @@ def send_outside_packet(recieved):
 
 def main():
     inside_sniffer = scapy.AsyncSniffer(iface=INSIDE_IFACE, store=False, filter="ip and inbound", prn=send_inside_packet)
-    outside_sniffer = scapy.AsyncSniffer(iface=INSIDE_IFACE, store=False, filter="ip and inbound", prn=send_outside_packet)
+    outside_sniffer = scapy.AsyncSniffer(iface=OUTSIDE_IFACE, store=False, filter="ip and inbound", prn=send_outside_packet)
     inside_sniffer.start()
     outside_sniffer.start()
     input("Press enter to exit")
