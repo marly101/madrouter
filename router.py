@@ -1,7 +1,8 @@
 import scapy.all as scapy
 
-IFACE_1 = "enp0s8"
-IFACE_2 = "enp0s9"
+OUTSIDE_IFACE = "enp0s8"
+INSIDE_IFACE = "enp0s9"
+BLOCKED_PORT = 12345
 ICMP_UNREACHABLE_TYPE = 3
 ICMP_HOST_UNREACHABLE_CODE = 1
 ICMP_TIME_EXCEEDED_TYPE = 11
@@ -26,10 +27,13 @@ def route_packet(packet):
         return
     print(scapy.Ether() / packet[scapy.IP])
     print(to_send_iface)
+    if packet.sniffed_on == OUTSIDE_IFACE and packet.haslayer(scapy.UDP) and packet.sport == BLOCKED_PORT:
+        return
     scapy.sendp(scapy.Ether() / packet[scapy.IP], iface=to_send_iface, verbose=True)
 
+
 def main():
-    scapy.sniff(iface=[IFACE_1, IFACE_2, "enp0s3"], prn=route_packet, store=False, filter="inbound")
+    scapy.sniff(iface=[OUTSIDE_IFACE, INSIDE_IFACE], prn=route_packet, store=False, filter="inbound")
 
 if __name__ == "__main__":
     main()
