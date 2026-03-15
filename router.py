@@ -1,4 +1,5 @@
 import scapy.all as scapy
+from rule import Rule
 
 OUTSIDE_IFACE = "enp0s8"
 INSIDE_IFACE = "enp0s9"
@@ -8,6 +9,7 @@ ICMP_HOST_UNREACHABLE_CODE = 1
 ICMP_TIME_EXCEEDED_TYPE = 11
 ICMP_TTL_EXPIRED_CODE = 0
 LOOPBACK = "lo"
+RULES = [Rule("UDP_DPORT", 12345)]
 
 def route_packet(packet):
     if not packet.haslayer(scapy.IP):
@@ -27,8 +29,10 @@ def route_packet(packet):
         return
     print(scapy.Ether() / packet[scapy.IP])
     print(to_send_iface)
-    if packet.sniffed_on == OUTSIDE_IFACE and packet.haslayer(scapy.UDP) and packet.sport == BLOCKED_PORT:
-        return
+    if packet.sniffed_on == OUTSIDE_IFACE:
+        for rule in RULES:
+            if not rule.filter(packet):
+                return
     scapy.sendp(scapy.Ether() / packet[scapy.IP], iface=to_send_iface, verbose=True)
 
 
